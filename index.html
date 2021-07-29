@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+  <style>
+    .completed {
+      text-decoration: line-through
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div id="app" class="container my-3">
+      <div class="input-group mb-3">
+        <span class="input-group-text">待辦事項</span>
+        <input type="text" class="form-control" placeholder="準備要做的任務" id="newTodo" v-model="newTodo">
+        <button class="btn btn-primary" type="button" id="addTodo" @click="addTodo">新增</button>
+      </div>
+      <div class="card text-center">
+        <ul class="list-group list-group-flush text-left" id="todoList">
+          <li class="list-group-item" v-for="item in filterList" :key="id">
+            <div class="d-flex">
+              <div class="form-check">
+                <div>
+                  <input class="form-control" type="text" placeholder="編輯" v-model="editText" v-if="editId === item.id"
+                    @keyup.enter="editFinish(item)" @keyup.esc="editCancel()" />
+                  <div v-else>
+                    <input :id="item.id" type="checkbox" class="form-check-input" v-model="item.finish"
+                      @click="item.finish = !item.finish" :checked="item.finish">
+                    <label :for="item.id" :class="{completed: item.finish === true}" @dblclick="editTodo(item)">{{
+                      item.text
+                      }}</label>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn-close ms-auto remove" @click="removeTodo(item)">
+              </button>
+            </div>
+          </li>
+        </ul>
+        <div class="card-footer d-flex justify-content-between">
+          <span>有 <span id="taskCount">{{ todoList.length }}</span> 筆任務</span>
+          <div>
+            <a href="#" class="me-3" @click.prevent="status = 'all'">全部</a>
+            <a href="#" class="me-3" @click.prevent="status = 'active'">未完成</a>
+            <a href="#" class="me-3" @click.prevent="status = 'finish'">已完成</a>
+            <a href="#" @click.prevent="clearAll">清除所有任務</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/vue@next"></script>
+  <script>
+    Vue.createApp({
+      data() {
+        return {
+          newTodo: '',
+          todoList: [],
+          editId: '',
+          editText: '',
+          status: ''
+        }
+      },
+      methods: {
+        addTodo() {
+          const todo = this.newTodo.trim();
+          if (todo === "") {
+            alert('請輸入代辦事項！')
+            return;
+          }
+          this.todoList.push({
+            id: this.todoList.length + 1,
+            text: this.newTodo,
+            finish: false
+          });
+          this.newTodo = '';
+          console.log(this.todoList);
+        },
+        removeTodo(item) {
+          const index = this.todoList.findIndex(obj => obj.id === item.id);
+          this.todoList.splice(index, 1);
+        },
+        editTodo(item) {
+          this.editId = item.id;
+          this.editText = item.text;
+        },
+        editFinish(item) {
+          const eTodo = this.editText.trim();
+          if (eTodo === "") {
+            alert('代辦事項不可為空白！')
+            return;
+          }
+          const index = this.todoList.findIndex(obj => obj.id === this.editId);
+          this.todoList[index].text = this.editText;
+          this.editId = '';
+          this.editText = '';
+        },
+        editCancel() {
+          this.editId = '';
+          this.editText = '';
+        },
+        clearAll() {
+          if (window.confirm('是否確定要刪除全部？')) {
+            this.todoList = [];
+            this.newTodo = '';
+            this.editId = '';
+            this.editText = '';
+            this.status = '';
+          }
+        }
+      },
+      computed: {
+        filterList() {
+          switch (this.status) {
+            case 'active':
+              return this.todoList.filter(function (item) {
+                return item.finish === false;
+              });
+              break;
+
+            case 'finish':
+              return this.todoList.filter(function (item) {
+                return item.finish === true;
+              });
+              break;
+
+            default:
+              return this.todoList;
+              break;
+          }
+        }
+      },
+    }).mount('#app');
+  </script>
+</body>
+
+</html>
